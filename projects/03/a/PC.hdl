@@ -17,4 +17,25 @@ CHIP PC {
 
     PARTS:
     // Put your code here:
+
+    Mux16(b=in, a=feedback, sel=load, out=adder1);
+    Mux16(b=false, a[0]=todff0, a[1]=todff1, a[2]=todff2,  a[3]=todff3,  a[4]=todff4,  a[5]=todff5,  a[6]=todff6,  a[7]=todff7,  a[8]=todff8,  a[9]=todff9,  a[10]=todff10,  a[11]=todff11,  a[12]=todff12,  a[13]=todff13,  a[14]=todff14,  a[15]=todff15, sel=reset, out=feedback);
+    Mux16(a=false, b[0]=true, b[1..15]=false, sel=inc, out=adder2);
+    Add16(a=adder1, b=adder2, out[0]=todff0, out[1]=todff1,  out[2]=todff2,  out[3]=todff3,  out[4]=todff4,  out[5]=todff5,  out[6]=todff6,  out[7]=todff7,  out[8]=todff8,  out[9]=todff9,  out[10]=todff10,  out[11]=todff11,  out[12]=todff12,  out[13]=todff13,  out[14]=todff14,  out[15]=todff15] );
+    DFF(in=todff0, out=out[0]);
+    DFF(in=todff1, out=out[1]);
+    DFF(in=todff2, out=out[2]);
+    DFF(in=todff3, out=out[3]);
+    DFF(in=todff4, out=out[4]);
+    DFF(in=todff5, out=out[5]);
+    DFF(in=todff6, out=out[6]);
+    DFF(in=todff7, out=out[7]);
+    DFF(in=todff8, out=out[8]);
+    DFF(in=todff9, out=out[9]);
+    DFF(in=todff10, out=out[10]);
+    DFF(in=todff11, out=out[11]);
+    DFF(in=todff12, out=out[12]);
+    DFF(in=todff13, out=out[13]);
+    DFF(in=todff14, out=out[14]);
+    DFF(in=todff15, out=out[15]);
 }
