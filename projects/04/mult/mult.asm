@@ -7,3 +7,17 @@
 // (R0, R1, R2 refer to RAM[0], RAM[1], and RAM[2], respectively.)
 
 // Put your code here.
+
+//initialize 
+//r0, r1, i=r0,r2=0
+//
+//loop
+//    if i > 0 goto @END
+//    r2=r2+r1
+//    i=i-1
+//
+//    (END)
+
+
+    @i
+    M=
