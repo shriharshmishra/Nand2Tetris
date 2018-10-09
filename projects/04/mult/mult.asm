@@ -18,7 +18,7 @@
 //    @LOOP
 //    (END)
 
-    //Initialize i=R0-1
+    //Initialize i=R0
     @R0 
     D=M
     @i
