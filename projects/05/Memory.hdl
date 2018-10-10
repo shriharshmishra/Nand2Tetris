@@ -27,5 +27,31 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // Put your code here: 
+    /*
+     Building loading logic. Either Screen or Ram is to be loaded
+     based on 'load' and 'address[15]'. So 'loadRam' is derived from
+     'load & !address[14]' and 'loadScr' is derived from 
+     'load & address[14]'
+    */
+    Not(in=address[14], out=nota14);
+    And(a=load, b=nota14, out=loadRam);
+    And(a=load, b=address[14], out=loadScr);
+
+    /*
+     Wiring RAM16K, Screen and Keyboard chips as per their specs
+    */
+    RAM16K(in=in, load=loadRam, address=address[0..13], out=ramout);
+    Screen(in=in, load=loadScr, address=address[0..12], out=scrout);
+    Keyboard(out=kbdout);
+
+    /*
+     Selecting one from Screen, Keyboard and RAM16K outputs.
+     'a14&a13' selects Keyboard if true. First Mux16 selects between
+     Screen and Keyboard outputs. Second select between RAM16K and 
+     Screen or Keyboard output based on address[14].
+    */
+    And(a=address[13], b=address[14], out=selSK);
+    Mux16(a=scrout, b=kbdout, sel=selSK, out=scrkbd);
+    Mux16(a=ramout, b=scrkbd, sel=address[14], out=out);
 }
