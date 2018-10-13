@@ -40,4 +40,47 @@ CHIP CPU {
 
     PARTS:
     // Put your code here:
+
+    Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aInput);
+    Not(in=instruction[15], out=loadAReg1);
+    Or(a=loadAReg1, b=instruction[5], out=loadAReg);
+    ARegister(in=aInput, load=loadAReg, out=aOut, out[0..14]=addressM);
+    Mux16(a=aOut, b=inM, sel=instruction[12], out=aluYIn);
+    DRegister(in=aluOut, load=instruction[4], out=dOut);
+    ALU(x=dOut, y=aluYIn, out=aluOut, out=outM,
+      zx=instruction[11], nx=instruction[10], 
+      zy=instruction[9], ny=instruction[8], 
+      f=instruction[7], no=instruction[6], zr=zr, ng=ng);
+
+    Or(a=instruction[0], b=instruction[1], out=pcinc1);
+    Or(a=pcinc1, b=instruction[2], out=pcinc2);
+    Not(in=pcinc2, out=dontjump);
+    And(a=instruction[15], b=dontjump, out=cinstrnojump);
+    Not(in=instruction[15], out=ainstr);
+    Or(a=cinstrnojump, b=ainstr, out=pcinc);
+
+    Not(in=zr, out=notzr);
+    Not(in=ng, out=notng);
+    And(a=notzr, b=notng, out=notzrAndnotng);
+    Or(a=notzr, b=notng, out=notzrOrnotng);
+    Or(a=zr, b=ng, out=zrOrng);
+
+    Mux8Way16(a=false, 
+        b[0]=notzrAndnotng, b[1..15]=false, 
+        c[0]=zr, c[1..15]=false, 
+        d[0]=notzrOrnotng, d[1..15]=false, 
+        e[0]=ng, e[1..15]=false, 
+        f[0]=notzr, f[1..15]=false, 
+        g[0]=zrOrng, f[1..15]=false, 
+        h=true, 
+        sel[0]=instruction[0],
+        sel[1]=instruction[1],
+        sel[2]=instruction[2], 
+        out[0..7]=jumpSel, out[8..15]=jumpSelIgnore);
+    
+    Or8Way(in=jumpSel, out=pcload);
+
+    PC(reset=reset, out[0..14]=pc, load=pcload, inc=pcinc, in=aOut);
+
+    Mux(b=instruction[3], a=false, sel=instruction[15], out=writeM);
 }
