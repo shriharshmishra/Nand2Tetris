@@ -41,31 +41,68 @@ CHIP CPU {
     PARTS:
     // Put your code here:
 
+    /*
+    ARegister Input is selected based on op-code(i15), 
+    either instruction or ALU output is selected. 
+    */
     Mux16(a=instruction, b=aluOut, sel=instruction[15], out=aInput);
+
+    /*
+    Loading of ARegister is decided based on op-code(i15), 
+    if A-instruction, or destitation of C-instruction is 
+    A-Register, then load A-Register.
+    */
     Not(in=instruction[15], out=loadAReg1);
     Or(a=loadAReg1, b=instruction[5], out=loadAReg);
+   
+    /*
+    Implement A-Register. 
+    */
     ARegister(in=aInput, load=loadAReg, out=aOut, out[0..14]=addressM);
-    Mux16(a=aOut, b=inM, sel=instruction[12], out=aluYIn);
+
+
+    /*
+    Load DRegister if opcode indicates a C-instruction and 
+    d2-bit of the instruction is set. 
+    */
     And(a=instruction[15], b=instruction[4], out=loadDReg);
+    /*
+    // DRegister will store ALU output
+    */
     DRegister(in=aluOut, load=loadDReg, out=dOut);
+
+    /*
+    Decide what will be Y-input to the ALU, inM or A-Register output 
+     based on a-bit of the C-instruction.
+    */
+    Mux16(a=aOut, b=inM, sel=instruction[12], out=aluYIn);
+    /*
+    ALU inputs are described as follows - 
+        X-input is DRegister output
+        Y-input is decided above
+        Control bits are copied from C-instruction.
+        Output is used as chip output outM and aluOut.
+        Output control bits zr and ng are used for controlling PC. 
+    */
     ALU(x=dOut, y=aluYIn, out=aluOut, out=outM,
       zx=instruction[11], nx=instruction[10], 
       zy=instruction[9], ny=instruction[8], 
       f=instruction[7], no=instruction[6], zr=zr, ng=ng);
 
-    //Or(a=instruction[0], b=instruction[1], out=pcinc1);
-    //Or(a=pcinc1, b=instruction[2], out=pcinc2);
-    //Not(in=pcinc2, out=dontjump);
-    //And(a=instruction[15], b=dontjump, out=cinstrnojump);
-    //Not(in=instruction[15], out=ainstr);
-    //Or(a=cinstrnojump, b=ainstr, out=pcinc);
 
+    /*
+    ALU output control bits are used build more internal signals for 
+    deciding whether to load or increment PC. 
+    */
     Not(in=zr, out=notzr);
     Not(in=ng, out=notng);
     And(a=notzr, b=notng, out=notzrAndnotng);
-    //Or(a=notzr, b=notng, out=notzrOrnotng);
     Or(a=zr, b=ng, out=zrOrng);
 
+    /*
+    Based on jump bits of the C-instruction, destination value 
+    is evaluated based on the ALU output control bits.
+    */
     Mux8Way16(a=false,                      //NO Jump
         b[0]=notzrAndnotng, b[1..15]=false, //out>0 
         c[0]=zr, c[1..15]=false,            //out=0
@@ -79,11 +116,29 @@ CHIP CPU {
         sel[2]=instruction[2], 
         out[0..7]=jumpSel, out[8..15]=jumpSelIgnore);
     
+    /*
+    The first 8-bits of the above Mux8Way16 output is used to identify if 
+    Jump is needed or not. 
+    */
     Or8Way(in=jumpSel, out=jumpYes);
+    /*
+    If we have C-instruction and Jump is needed, then loadPC with A-Register output.
+    */
     And(a=instruction[15], b=jumpYes, out=pcload);
+
+    /*
+    If we are not loading PC then we should incrementing it. 
+    */
     Not(in=pcload, out=pcinc); 
 
+    /*
+    Implement PC
+    */
     PC(reset=reset, out[0..14]=pc, load=pcload, inc=pcinc, in=aOut);
 
+    /*
+    Decidnig whether aluOut is to be written to the memory based on 
+    d3 bit of the C-instruction. 
+    */
     Mux(b=instruction[3], a=false, sel=instruction[15], out=writeM);
 }
