@@ -1,0 +1,43 @@
+class Block {
+
+    field int x1, y1, x2, y2;
+    
+    constructor Block new(int Aheight, int Awidth, int Aoffset) { 
+
+        let x1 = (Aoffset * Awidth) + 1;
+        let x2 = x1 + Awidth;
+        let y2 = 511;
+        let y1 = y2 - (Aheight * 51);
+
+        do logCoords();
+        do draw();
+        return this;
+    }
+
+   method void logCoords() {
+        do Output.printString("Block(");
+        do Output.printInt(x1);
+        do Output.printString(", ");
+        do Output.printInt(y1);
+        do Output.printString(", ");
+        do Output.printInt(x2);
+        do Output.printString(", ");
+        do Output.printInt(y2);
+        do Output.printString(")");
+        do Output.println();
+        return;
+    }
+
+   /** Draws the block on the screen. */
+   method void draw() {
+      do Screen.setColor(true);
+      do Screen.drawRectangle(x1, y1, x2, y2);
+      return;
+   }
+
+   /** Disposes this block. */
+   method void dispose() {
+      do Memory.deAlloc(this);
+      return;
+   }
+}
