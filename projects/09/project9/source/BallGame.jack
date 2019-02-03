@@ -1,0 +1,138 @@
+/**
+ * Implements the Ball Mover game.
+ * This simple game allows the user to move a black ball around
+ * the screen while navigating around a terrain of blocks..
+ * When the game starts, a ball is shown at the
+ * bottom-left corner of the screen. The user controls the ball as follows.
+ * The 4 arrow keys are used to move the ball up, down, left, and right.
+ * The 'q' key is used to quit the game. 
+ * Once the ball touches the right end of the screen the game finishes. 
+ */
+
+class BallGame {
+   field Ball ball; // the ball of this game
+   field Terrain terrain; //the terrain on which the ball should be navigated.
+   field int direction; // the ball's current direction: 
+                        // 0=none, 1=up, 2=down, 3=left, 4=right
+
+   /** Constructs a new Ball Game. */
+   constructor BallGame new() {
+
+      do Output.printString("BALL DANCE");
+      do Output.println();
+      do Output.printString("Move the ball around the terrain and reach the right end of the screen. Use the arrow keys to move the ball and 'q' to quit.");
+      do Sys.wait(5000);
+      do Screen.clearScreen();
+      // Creates a ball and and the terrain. 
+      let ball = Ball.new(20, 235, 20);
+      let terrain = Terrain.new(4, 3, 7);
+      let direction = 0;  // initial state is no movement
+      return this;
+   }
+
+
+   /** Disposes this game. */
+   method void dispose() {
+      do ball.dispose();
+      do terrain.dispose();
+      do Memory.deAlloc(this);
+      return;
+   }
+
+   /** Moves the ball in the current direction. */
+   method void moveBall() {
+      var int x, y, radius;
+      var boolean nextPositionValid;
+
+      let nextPositionValid = false;
+      let x = ball.getX();
+      let y = ball.getY();
+      let radius = ball.getRadius();
+      if (direction = 1) { 
+        let x = x + radius;
+        let y = (y - radius) - 1;
+        if (y < radius) { let y = radius; } 
+        let nextPositionValid = ~ (terrain.isPointInsideTerrain(x, y));
+        if (nextPositionValid) {
+            do ball.moveUp(); 
+        }
+      }
+      if (direction = 2) { 
+        let y = y + radius + 1; // bottom-most point
+        if (y > 255) { let y = 255 - radius; } 
+        let x = x - radius; // left-most point
+        let nextPositionValid = ~ (terrain.isPointInsideTerrain(x, y));
+        let nextPositionValid = nextPositionValid & (~ (terrain.isPointInsideTerrain((x + radius), y)));
+        if (nextPositionValid) {
+            do ball.moveDown(); 
+        }
+      }
+      if (direction = 3) { 
+        let y = y + radius;
+        let x = (x - radius) - 1;
+        if (x < radius) { let x = radius; } 
+        let nextPositionValid = ~ (terrain.isPointInsideTerrain(x, y));
+        if (nextPositionValid) {
+            do ball.moveLeft(); 
+        }
+      }
+      if (direction = 4) { 
+        let y = y + radius;
+        let x = x + radius + 1;
+        if (x > 511) { let x = 511 - radius; } 
+        let nextPositionValid = ~ (terrain.isPointInsideTerrain(x, y));
+        if (nextPositionValid) {
+            do ball.moveRight(); 
+        }
+      }
+      do Sys.wait(10);  // delays the next movement
+
+
+      return;
+   }
+
+   /** Ends the game and prints message on the screen. */
+   method void endGame() {
+      do Screen.clearScreen();
+      do Output.printString("Game Over. You Won!!");
+      return;
+   }
+
+   /** Runs the game: handles the user's inputs and moves the ball accordingly */
+   method void run() {
+      var char key;  // the key currently pressed by the user
+      var boolean exit;
+      var int x, radius;
+      let exit = false;
+      
+      while (~exit) {
+         // waits for a key to be pressed
+         while (key = 0) {
+            let key = Keyboard.keyPressed();
+            do moveBall();
+         }
+         if (key = 81)  { let exit = true; }     // q key
+         if (key = 131) { let direction = 1; }   // up arrow
+         if (key = 133) { let direction = 2; }   // down arrow
+         if (key = 130) { let direction = 3; }   // left arrow
+         if (key = 132) { let direction = 4; }   // right arrow
+
+         // waits for the key to be released
+         while (~(key = 0)) {
+            let key = Keyboard.keyPressed();
+            do moveBall();
+         }
+         
+         // Check if ball has reach right-end of the screen. 
+         let x = ball.getX();
+         let radius = ball.getRadius();
+         if (x = (511 - radius)) {
+           do endGame();
+         }
+     } // while
+     return;
+   }
+}
+
+
+

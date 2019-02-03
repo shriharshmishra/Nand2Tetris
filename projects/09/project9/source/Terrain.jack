@@ -1,0 +1,51 @@
+/**
+* Terrain Class denotes a terrain. It consists of 3 blocks. Terrain 
+* constructor reads the heights of the three blocks. 
+*/
+class Terrain {
+
+    field Array blocks; //heights of the terrain blocks
+    field int numBlocks;
+
+    constructor Terrain new(int Ah1, int Ah2, int Ah3) { 
+
+        let blocks = Array.new(3);
+        let numBlocks = 3;
+
+        let blocks[0] = Block.new(Ah1, 40, 1);
+        let blocks[1] = Block.new(Ah2, 40, 2);
+        let blocks[2] = Block.new(Ah3, 40, 3);
+
+        return this;
+    }
+
+    /** Method checks if the point is inside the Terrain */
+    method boolean isPointInsideTerrain(int x, int y) {
+        var int i;
+        var Block block;
+        let i = 0;
+        while(i < numBlocks) {
+           let block = blocks[i];
+           if (block.isPointInsideBlock(x, y)) {
+                return true;
+           }
+           let i = i + 1;
+        }
+        return false;
+    }
+
+   /** Disposes this Terrain. */
+   method void dispose() {
+        var int i;
+        var Block block;
+        let i = 0;
+        while(i < 3) {
+           let block = blocks[i];
+           do block.dispose();
+           let i = i + 1;
+        }
+   
+      do Memory.deAlloc(this);
+      return;
+   }
+}

@@ -1,0 +1,11 @@
+/** Initializes a new Ball game and starts running it. */
+class Main {
+    function void main() {
+        var BallGame game;
+        let game = BallGame.new();
+        do game.run();
+        do game.dispose();
+
+        return;
+    }
+}
